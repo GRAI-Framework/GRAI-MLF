@@ -48,7 +48,7 @@ pip install gracie-framework
 
 ## Documentation
 
-Visit our [documentation](https://gracie-framework.readthedocs.io/) for detailed guides and examples.
+Visit our [documentation](https://github.com/GRAI-Framework/GRAI-MLF/blob/main/docs/quickstart.md#docsquickstartmd) for detailed guides and examples.
 
 ## Examples
 
