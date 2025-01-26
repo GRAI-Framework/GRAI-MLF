@@ -1,0 +1,56 @@
+# gracie/integrations/openai_provider.py
+import openai
+from typing import Dict, List, Optional
+from .llm_base import BaseLLMProvider, LLMConfig
+
+class OpenAIProvider(BaseLLMProvider):
+    """OpenAI integration"""
+    def __init__(self, config: LLMConfig):
+        super().__init__(config)
+        openai.api_key = config.api_key
+
+    async def generate(self, prompt: str, context: Optional[Dict] = None) -> str:
+        try:
+            messages = []
+            
+            # Add context if provided
+            if context:
+                if context.get('system_prompt'):
+                    messages.append({
+                        "role": "system",
+                        "content": context['system_prompt']
+                    })
+                if context.get('examples'):
+                    for example in context['examples']:
+                        messages.extend([
+                            {"role": "user", "content": example['input']},
+                            {"role": "assistant", "content": example['output']}
+                        ])
+
+            # Add current prompt
+            messages.append({"role": "user", "content": prompt})
+
+            response = await openai.ChatCompletion.acreate(
+                model=self.config.model_name,
+                messages=messages,
+                max_tokens=self.config.max_tokens,
+                temperature=self.config.temperature,
+                top_p=self.config.top_p,
+                presence_penalty=self.config.presence_penalty,
+                frequency_penalty=self.config.frequency_penalty
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            raise Exception(f"OpenAI generation error: {str(e)}")
+
+    async def embed(self, text: str) -> List[float]:
+        try:
+            response = await openai.Embedding.acreate(
+                model="text-embedding-ada-002",
+                input=text
+            )
+            return response.data[0].embedding
+        except Exception as e:
+            raise Exception(f"OpenAI embedding error: {str(e)}")
