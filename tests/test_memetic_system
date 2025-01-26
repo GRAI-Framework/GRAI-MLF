@@ -1,0 +1,46 @@
+# tests/test_memetic_system.py
+import unittest
+from gracie.core.knowledge_system import GracieKnowledgeSystem, KnowledgeConfig
+from gracie.models.topic import Topic
+
+class TestKnowledgeSystem(unittest.TestCase):
+    def setUp(self):
+        self.config = KnowledgeConfig(
+            db_path=":memory:",  # Use in-memory SQLite for testing
+            enable_faiss=True
+        )
+        self.knowledge_system = GracieKnowledgeSystem(self.config)
+        
+    def test_add_topic(self):
+        topic = Topic(
+            name="test_topic",
+            definition="Test definition",
+            facts=["Fact 1", "Fact 2"]
+        )
+        result = self.knowledge_system.add_topic(topic)
+        self.assertTrue(result)
+        
+    def test_get_relevant_knowledge(self):
+        # Add test topic
+        topic = Topic(
+            name="test_topic",
+            definition="Test definition about AI",
+            facts=["AI is evolving", "AI needs data"]
+        )
+        self.knowledge_system.add_topic(topic)
+        
+        # Test retrieval
+        results = self.knowledge_system.get_relevant_knowledge("Tell me about AI")
+        self.assertTrue(len(results) > 0)
+        
+    def test_invalid_topic(self):
+        topic = Topic(
+            name="",  # Invalid name
+            definition="",
+            facts=[]
+        )
+        result = self.knowledge_system.add_topic(topic)
+        self.assertFalse(result)
+
+if __name__ == '__main__':
+    unittest.main()
